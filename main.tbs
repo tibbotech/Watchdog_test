@@ -1,0 +1,42 @@
+'==================
+'Using the watchdog
+'==================
+
+'The watchdog is a powerful tool that can reboot your device in case it hangs up.
+'On ARM-based platforms the watchdog is NOT running by default.
+'This is because once the watchdog is enabled it can't be disabled except through reboot, and this will interfere with putting
+'the device into the standby mode using sys.standby (the watchdog will keep resetting the device --
+'sometimes you want this, and sometimes you don't).
+
+'TiOS will take care of resetting the watchdog, unless you want your app to handle the watchdog "manually".
+'This app demonstrates the switchover into the "manual" watchdog control.
+
+'The watchdog is reset in the on_sys_timer().
+'To cause the watchdog reset press the MD button and keep it pressed until the device resets.
+
+'Points of interest:
+'- The watchdog timeout period should be set to ~2 times the projected period of calls to sys.wdreset.
+'  This is accomplished in line #29.
+
+'In depth:
+'- When the app is not running (PAUSE or BREAK state) TiOS will take care of the watchdog even when sys.wdautoreset=DISABLED.
+
+'To-do:
+'- Try various watchdog timeout periods by programming different values into sys.wdperiod.
+'- Comment out line #32 and notice how pressing and holding the MD button has no effect (because sys.wdautoreset=ENABLED).
+
+'--------------------------------------------------------------------------------------------------------------------------------
+sub on_sys_init()
+	pat.play("G-~",PL_PAT_CANINT)   '"proof of life" pattern
+	sys.wdenabled=YES				'once the watchdog is enabled it can't be disabled
+	sys.wdautoreset=DISABLED		'switching into the manual reset mode
+	sys.wdperiod=500					'setting the period to ~1 sec (x2 of the default on_sys_timer period)
+end sub
+
+sub on_sys_timer()
+	'Holding down the MD button (pulling down the MD line) will prevent watchdog resets,
+	'the device will reboot (after the timeout).
+	if button.pressed=NO then
+		sys.wdreset
+	end if
+end sub

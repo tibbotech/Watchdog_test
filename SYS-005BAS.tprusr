@@ -1,0 +1,7 @@
+[project]
+watch=sys.wdautoreset, sys.wdperiod, sys.wdenabled
+[file1]
+line=0
+cursor=1966
+opened=active
+breakpoints=
